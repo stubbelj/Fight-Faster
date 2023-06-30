@@ -13,7 +13,7 @@ public class Hurtbox : MonoBehaviour
     }
 
     public void TakeDamage(AttackData attackData) {
-        if (tagMask == attackData.tagMask) {
+        if (tagMask == attackData.tagMask || attackData.tagMask == "Neutral") {
             combat.TakeDamage(attackData);
         }
     }
