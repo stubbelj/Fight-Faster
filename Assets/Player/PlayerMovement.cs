@@ -22,14 +22,6 @@ public class PlayerMovement : MonoBehaviour
         rb = GetComponent<Rigidbody2D>();
         lastGroundChecked = Time.time;
         lastJumped = Time.time;
-
-        StartCoroutine(DelayedForce());
-    }
-
-    IEnumerator DelayedForce() {
-        yield return new WaitForSeconds(5f);
-        print("bam");
-        rb.velocity += new Vector2(50, 0);
     }
 
     Dictionary<string, bool> currInputs = new Dictionary<string, bool> {
@@ -41,10 +33,10 @@ public class PlayerMovement : MonoBehaviour
     };
     
     void Update() {
-        if (Input.GetKeyDown("a")) {
+        if (Input.GetKey("a")) {
             rb.velocity += -Vector2.right * moveSpeed * Time.deltaTime;
         }
-        else if (Input.GetKeyDown("d")) {
+        else if (Input.GetKey("d")) {
             rb.velocity += Vector2.right * moveSpeed * Time.deltaTime;
         }
 
@@ -55,22 +47,6 @@ public class PlayerMovement : MonoBehaviour
         SetGrounded();
         ClampMovement();
         rb.velocity += 9.8f * -Vector2.up * Time.deltaTime;
-    }
-
-    //called every frame from PlayerInputManager.Update()
-    public void HandleInputs(Dictionary<string, bool> newInputs) {
-        currInputs = newInputs;
-
-        if (newInputs["left"]) {
-            rb.velocity += -Vector2.right * moveSpeed * Time.deltaTime;
-        }
-        else if (newInputs["right"]) {
-            rb.velocity += Vector2.right * moveSpeed * Time.deltaTime;
-        }
-
-        if (newInputs["jump"]) {
-            Jump();
-        }
     }
 
     void SetGrounded() {
@@ -95,7 +71,6 @@ public class PlayerMovement : MonoBehaviour
     }
 
     void ClampMovement() {
-        //clamp velocity
         rb.velocity = new Vector3(Mathf.Clamp(rb.velocity.x, -maxVel.x, maxVel.x), Mathf.Clamp(rb.velocity.y, -maxVel.y, maxVel.y));
     }
 }
