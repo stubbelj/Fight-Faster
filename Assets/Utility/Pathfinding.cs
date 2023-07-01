@@ -51,16 +51,8 @@ public class Pathfinding {
         public int jumpVal;
     };
 
-    public void InitPathFind(Vector3 startPos, Vector3 endPos, float initialJumpVal) {
+    public void InitPathFind() {
         cellGrid = new List<List<List<Cell>>>();
-
-        maxJumpVal = 0;
-        while (initialJumpVal >= cellSize) {
-            initialJumpVal -= cellSize;
-            maxJumpVal++;
-        }
-
-        maxJumpVal = 6;
 
         for (int i = 0; i < worldSize.x * 2; i ++) {
             cellGrid.Add(new List<List<Cell>>());
@@ -71,18 +63,6 @@ public class Pathfinding {
                 }
             }
         }
-
-        startCoords = WorldPointToCellCoords(startPos);
-        endCoords = WorldPointToCellCoords(endPos);
-        startCell = cellGrid[startCoords[0] + worldSize.x][startCoords[1] + worldSize.y][0];
-        endCell = cellGrid[endCoords[0] + worldSize.x][endCoords[1] + worldSize.y][0];
-        openList = new List<Cell>();
-        closedList = new List<Cell>();
-
-        startCell.x = startCoords[0] + worldSize.x;
-        startCell.y = startCoords[1] + worldSize.y;
-        endCell.x = endCoords[0] + worldSize.x;
-        endCell.y = endCoords[1] + worldSize.y;
 
         for (int i = 0; i < worldSize.x * 2; i ++) {
             for (int j = 0; j < worldSize.y * 2; j ++) {
@@ -103,7 +83,27 @@ public class Pathfinding {
 
     }
 
-    public List<Vector3> PathFind(float[] size, GameObject markerPrefab) {
+    public List<Vector3> PathFind(Vector3 startPos, Vector3 endPos, float initialJumpVal) {
+
+        maxJumpVal = 0;
+        while (initialJumpVal >= cellSize) {
+            initialJumpVal -= cellSize;
+            maxJumpVal++;
+        }
+
+        maxJumpVal = 6;
+
+        startCoords = WorldPointToCellCoords(startPos);
+        endCoords = WorldPointToCellCoords(endPos);
+        startCell = cellGrid[startCoords[0] + worldSize.x][startCoords[1] + worldSize.y][0];
+        endCell = cellGrid[endCoords[0] + worldSize.x][endCoords[1] + worldSize.y][0];
+        openList = new List<Cell>();
+        closedList = new List<Cell>();
+
+        startCell.x = startCoords[0] + worldSize.x;
+        startCell.y = startCoords[1] + worldSize.y;
+        endCell.x = endCoords[0] + worldSize.x;
+        endCell.y = endCoords[1] + worldSize.y;
 
         int iterations = 0;
 

@@ -27,13 +27,13 @@ public class GameManager : MonoBehaviour
     void Start() {
         pathfinding = new Pathfinding();
         pathfinding.GenerateCollisionMasks(groundTilemap, traversableTilemap);
-        pathfinding.InitPathFind(player.transform.position, pathTarget.position, 32);
+        pathfinding.InitPathFind();
         StartCoroutine(DelayedStart());
     }
 
     IEnumerator DelayedStart() {
         yield return new WaitForSeconds(5f);
-        List<Vector3> solution = pathfinding.PathFind(new float[]{16, 16}, testMarkerPrefab);
+        List<Vector3> solution = pathfinding.PathFind(player.transform.position, pathTarget.position, 32);
         /*foreach(Vector3 point in solution) {
             GameObject.Instantiate(testMarkerPrefab, point, Quaternion.identity);
         }*/
