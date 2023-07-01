@@ -7,7 +7,7 @@ public class EnemyCombat : Combat
     public GameObject slashPrefab;
 
     // Slash Timer
-    private float slashTimer = 0f;
+    private float slashTimer = 3f;
     private float slashCooldown = 3f;
 
     void Awake() {
