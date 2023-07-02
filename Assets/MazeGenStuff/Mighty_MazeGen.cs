@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using static Mighty_MazeGen;
 
 [CreateAssetMenu]
 public class Mighty_MazeGen : ScriptableObject
@@ -10,8 +11,8 @@ public class Mighty_MazeGen : ScriptableObject
     public int rows;
     public bool removeDeadEnds;
     public Vector3 defaultWorldPosition;
-    public Group GenericRooms;
-    public List<Special> specialRooms;
+    public Generic GenericRooms;
+    public Special specialRooms;
     public List<Anchor> anchorRooms;
 
     //"private" fields not shown in Inspector
@@ -134,10 +135,7 @@ public class Mighty_MazeGen : ScriptableObject
         }
         //set the type for each room collection
         GenericRooms.TypeOfGroup = Types.Generic;
-        foreach (Special g in specialRooms)
-        {
-            g.TypeOfGroup = Types.Special;
-        }
+        specialRooms.TypeOfGroup = Types.Special;
         foreach (Anchor g in anchorRooms)
         {
             g.TypeOfGroup = Types.Anchor;
@@ -294,14 +292,12 @@ public class Mighty_MazeGen : ScriptableObject
             {
                 if ((b.boneExits & 0b1111) != 0)
                 {
-                    int rotationDeg = b.setRoom();
-                    if (b.roomPrefab is not null)
+                    b.setRoom();
+                    if (b.roomPrefab != null)
                     {
                         GameObject boneRoom = Instantiate(b.roomPrefab);
                         Bounds boneSize = boneRoom.GetComponent<Renderer>().bounds;
-                        boneRoom.transform.position = new Vector3((boneSize.size.x * (b.position.x + 1)) + defaultWorldPosition.x, (boneSize.size.z * (b.position.y + 1)) + defaultWorldPosition.y, defaultWorldPosition.z);
-                        boneRoom.transform.Rotate(0, rotationDeg, 0);
-                        boneRoom.transform.RotateAround(boneRoom.transform.position, Vector3.right, -90);
+                        boneRoom.transform.position = new Vector3((boneSize.size.x * (b.position.x + 1)) + defaultWorldPosition.x, (boneSize.size.y * (b.position.y + 1)) + defaultWorldPosition.y, defaultWorldPosition.z);
                         layoutObjects.Add(boneRoom);
                     } else
                     {
@@ -319,13 +315,12 @@ public class Mighty_MazeGen : ScriptableObject
             {
                 if ((b.boneExits & 0b1111) != 0)
                 {
-                    int rotationDeg = b.setRoom();
-                    if (b.roomPrefab is not null)
+                    b.setRoom();
+                    if (b.roomPrefab != null)
                     {
                         GameObject boneRoom = Instantiate(b.roomPrefab);
                         Bounds boneSize = boneRoom.GetComponent<Renderer>().bounds;
-                        boneRoom.transform.position = new Vector3((boneSize.size.x * (b.position.x + 1)) + buildPos.x, (boneSize.size.z * (b.position.y + 1)) + buildPos.y, buildPos.z);
-                        boneRoom.transform.Rotate(0, rotationDeg, 0);
+                        boneRoom.transform.position = new Vector3((boneSize.size.x * (b.position.x + 1)) + buildPos.x, (boneSize.size.y * (b.position.y + 1)) + buildPos.y, buildPos.z);
                         layoutObjects.Add(boneRoom);
                     }
                     else
@@ -351,18 +346,12 @@ public class Mighty_MazeGen : ScriptableObject
     {
         List<layoutBone> possibleRooms = findBones(null);
         possibleRooms.AddRange(findBones(Types.Generic));
-        foreach (Special g in specialRooms)
+        for (int i = 0; i < specialRooms.Amount; i++)
         {
-            if (g.TypeOfGroup == Types.Special)
-            {
-                for (int i = 0; i < g.Amount; i++)
-                {
-                    if (possibleRooms.Count <= 0) return false;
-                    int temp = UnityEngine.Random.Range(0, possibleRooms.Count);
-                    possibleRooms[temp].group = g;
-                    possibleRooms.RemoveAt(temp);
-                }
-            }
+            if (possibleRooms.Count <= 0) return false;
+            int temp = UnityEngine.Random.Range(0, possibleRooms.Count);
+            possibleRooms[temp].group = specialRooms;
+            possibleRooms.RemoveAt(temp);
         }
         return true;
     }
@@ -380,15 +369,12 @@ public class Mighty_MazeGen : ScriptableObject
                 if (possibleLocations.Count <= 0) return false;
                 Vector2Int chosenLocation = possibleLocations[UnityEngine.Random.Range(0, possibleLocations.Count)];
                 layoutSkeleton[chosenLocation.y][chosenLocation.x].group = a;
-                if (a.isFixedExits)
+                uint exits = 0b11110000;
+                foreach (Room.Exits e in a.exits)
                 {
-                    uint exits =0b11110000;
-                    foreach (Room.Exits e in a.exits)
-                    {
-                        exits |= (uint) e;
-                    }
-                    layoutSkeleton[chosenLocation.y][chosenLocation.x].boneExits = exits;
+                    exits |= (uint)e;
                 }
+                layoutSkeleton[chosenLocation.y][chosenLocation.x].boneExits = exits;
                 possibleLocations.Remove(chosenLocation);
             }
         }
@@ -401,70 +387,68 @@ public class Mighty_MazeGen : ScriptableObject
         {
             Anchor a = (Anchor)bone.group;
             layoutBone deadEnd;
-            if (a.isFixedExits)
+            if ((bone.boneExits & 0b0001) > 0 && bone.position.y < rows - 1)
             {
-                if ((bone.boneExits & 0b0001) > 0 && bone.position.y < rows - 1)
+                deadEnd = layoutSkeleton[bone.position.y + 1][bone.position.x];
+                if (deadEnd.addExit(0b0100) ||
+                    (deadEnd.boneExits & 0b0100) != 0)
                 {
-                    deadEnd = layoutSkeleton[bone.position.y + 1][bone.position.x];
-                    if (deadEnd.addExit(0b0100) || 
-                        (deadEnd.boneExits & 0b0100) != 0)
+                    if (deadEnd.group is null)
                     {
-                        if (deadEnd.group is null)
-                        {
-                            deadEnd.group = GenericRooms;
-                        }
-                    } else
-                    {
-                        return false;
+                        deadEnd.group = GenericRooms;
                     }
                 }
-                if ((bone.boneExits & 0b0010) > 0 && bone.position.x < columns - 1)
+                else
                 {
-                    deadEnd = layoutSkeleton[bone.position.y][bone.position.x + 1];
-                    if (deadEnd.addExit(0b1000) ||
-                        (deadEnd.boneExits & 0b1000) != 0)
+                    return false;
+                }
+            }
+            if ((bone.boneExits & 0b0010) > 0 && bone.position.x < columns - 1)
+            {
+                deadEnd = layoutSkeleton[bone.position.y][bone.position.x + 1];
+                if (deadEnd.addExit(0b1000) ||
+                    (deadEnd.boneExits & 0b1000) != 0)
+                {
+                    if (deadEnd.group is null)
                     {
-                        if (deadEnd.group is null)
-                        {
-                            deadEnd.group = GenericRooms;
-                        }
-                    }
-                    else
-                    {
-                        return false;
+                        deadEnd.group = GenericRooms;
                     }
                 }
-                if ((bone.boneExits & 0b0100) > 0 && bone.position.y > 0)
+                else
                 {
-                    deadEnd = layoutSkeleton[bone.position.y - 1][bone.position.x];
-                    if (deadEnd.addExit(0b0001) ||
-                        (deadEnd.boneExits & 0b0001) != 0)
+                    return false;
+                }
+            }
+            if ((bone.boneExits & 0b0100) > 0 && bone.position.y > 0)
+            {
+                deadEnd = layoutSkeleton[bone.position.y - 1][bone.position.x];
+                if (deadEnd.addExit(0b0001) ||
+                    (deadEnd.boneExits & 0b0001) != 0)
+                {
+                    if (deadEnd.group is null)
                     {
-                        if (deadEnd.group is null)
-                        {
-                            deadEnd.group = GenericRooms;
-                        }
-                    }
-                    else
-                    {
-                        return false;
+                        deadEnd.group = GenericRooms;
                     }
                 }
-                if ((bone.boneExits & 0b1000) > 0 && bone.position.x > 0)
+                else
                 {
-                    deadEnd = layoutSkeleton[bone.position.y][bone.position.x - 1];
-                    if (deadEnd.addExit(0b0010) ||
-                        (deadEnd.boneExits & 0b0010) != 0)
+                    return false;
+                }
+            }
+            if ((bone.boneExits & 0b1000) > 0 && bone.position.x > 0)
+            {
+                deadEnd = layoutSkeleton[bone.position.y][bone.position.x - 1];
+                if (deadEnd.addExit(0b0010) ||
+                    (deadEnd.boneExits & 0b0010) != 0)
+                {
+                    if (deadEnd.group is null)
                     {
-                        if (deadEnd.group is null)
-                        {
-                            deadEnd.group = GenericRooms;
-                        }
+                        deadEnd.group = GenericRooms;
                     }
-                    else
-                    {
-                        return false;
-                    }
+                }
+                else
+                {
+                    return false;
                 }
             }
         }
@@ -477,7 +461,7 @@ public class Mighty_MazeGen : ScriptableObject
         {
             foreach (layoutBone b in lb)
             {
-                if (b.boneExits != 0 && (b.group.TypeOfGroup != Types.Anchor || !((Anchor)b.group).isFixedExits) && (b.boneExits & (b.boneExits - 1)) == 0)
+                if (b.boneExits != 0 && b.group.TypeOfGroup != Types.Anchor && (b.boneExits & (b.boneExits - 1)) == 0)
                 {
                     if (!prepareWilson(b.position, impossibleEnd, (int)b.boneExits))
                     {
@@ -531,7 +515,7 @@ public class Mighty_MazeGen : ScriptableObject
         {
             foreach (layoutBone b in lb)
             {
-                if (b.boneExits != 0 && (b.group.TypeOfGroup != Types.Anchor || !((Anchor)b.group).isFixedExits) && (b.boneExits & (b.boneExits - 1)) == 0)
+                if (b.boneExits != 0 && b.group.TypeOfGroup != Types.Anchor && (b.boneExits & (b.boneExits - 1)) == 0)
                 {
                     if (!prepareWilson(b.position, impossibleEnd, (int)b.boneExits))
                     {
@@ -574,7 +558,7 @@ public class Mighty_MazeGen : ScriptableObject
         Vector2Int impossibleEnd = new Vector2Int(-1, -1);
         foreach (layoutBone bone in bones)
         {
-            if (!(bone.group.TypeOfGroup == Types.Anchor && ((Anchor)bone.group).isFixedExits && bone.boneExits == 0) && bone.boneExits == 0)
+            if (!(bone.group.TypeOfGroup == Types.Anchor && bone.boneExits == 0) && bone.boneExits == 0)
             {
                 if (!prepareWilson(bone.position, impossibleEnd, 0))
                 {
@@ -752,16 +736,6 @@ public class Mighty_MazeGen : ScriptableObject
     public class Group
     {
         public string Name;
-        [System.Serializable]
-        public struct roomList
-        {
-            public roomDeadEnd deadEnd;
-            public roomCorner corner;
-            public roomStraight straight;
-            public roomT T;
-            public roomPlus plus;
-        }
-        public roomList Rooms;
         [HideInInspector]
         public Mighty_MazeGen.Types TypeOfGroup;
         //figures out if this group is of a certain type
@@ -772,15 +746,51 @@ public class Mighty_MazeGen : ScriptableObject
         }
     }
     [System.Serializable]
+    public class Generic : Group
+    {
+        [System.Serializable]
+        public struct roomList
+        {
+            public List<__RU> __RU;
+            public List<_DR_> _DR_;
+            public List<LD__> LD__;
+            public List<L__U> L__U;
+            public List<L_R_> L_R_;
+            public List<_D_U> _D_U;
+            public List<LDR_> LDR_;
+            public List<LD_U> LD_U;
+            public List<L_RU> L_RU;
+            public List<_DRU> _DRU;
+            public List<LDRU> LDRU;
+        }
+        public roomList Rooms;
+    }
+    [System.Serializable]
     public class Special : Group
     {
         public int Amount;
+        [System.Serializable]
+        public struct roomList
+        {
+            public List<__RU> __RU;
+            public List<_DR_> _DR_;
+            public List<LD__> LD__;
+            public List<L__U> L__U;
+            public List<L_R_> L_R_;
+            public List<_D_U> _D_U;
+            public List<LDR_> LDR_;
+            public List<LD_U> LD_U;
+            public List<L_RU> L_RU;
+            public List<_DRU> _DRU;
+            public List<LDRU> LDRU;
+        }
+        public roomList Rooms;
     }
     [System.Serializable]
     public class Anchor : Group
     {
+        public GameObject room;
         public int Amount;
-        public bool isFixedExits = false;
         public List<Room.Exits> exits;
         public List<Vector2Int> possibleLocations;
     }
@@ -788,40 +798,73 @@ public class Mighty_MazeGen : ScriptableObject
     public class Room
     {
         public GameObject prefab;
-        public enum Exits { PosX = 2, NegX = 8, PosZ = 1, NegZ = 4 }
-        //public List<Exits> prefabExits;
+        public enum Exits { U = 1, R = 2, D = 4, L = 8 };
     }
     [System.Serializable]
-    public class roomDeadEnd : Room
+    public class __RU : Room
     {
-        public Exits exit1 = Exits.PosZ;
+        [HideInInspector]
+        public int exits = 0b0011;
     }
     [System.Serializable]
-    public class roomCorner : Room
+    public class _DR_ : Room
     {
-        public Exits exit1 = Exits.PosZ;
-        public Exits exit2 = Exits.PosX;
+        [HideInInspector]
+        public int exits = 0b0110;
     }
     [System.Serializable]
-    public class roomStraight : Room
+    public class LD__ : Room
     {
-        public Exits exit1 = Exits.PosZ;
-        public Exits exit2 = Exits.NegZ;
+        [HideInInspector]
+        public int exits = 0b1100;
     }
     [System.Serializable]
-    public class roomT : Room
+    public class L__U : Room
     {
-        public Exits exit1 = Exits.PosZ;
-        public Exits exit2 = Exits.PosX;
-        public Exits exit3 = Exits.NegZ;
+        [HideInInspector]
+        public int exits = 0b1001;
     }
     [System.Serializable]
-    public class roomPlus : Room
+    public class L_R_ : Room
     {
-        public Exits exit1 = Exits.PosZ;
-        public Exits exit2 = Exits.NegZ;
-        public Exits exit3 = Exits.PosX;
-        public Exits exit4 = Exits.NegX;
+        [HideInInspector]
+        public int exits = 0b1010;
+    }
+    [System.Serializable]
+    public class _D_U : Room
+    {
+        [HideInInspector]
+        public int exits = 0b0101;
+    }
+    [System.Serializable]
+    public class LDR_ : Room
+    {
+        [HideInInspector]
+        public int exits = 0b1110;
+    }
+    [System.Serializable]
+    public class LD_U : Room
+    {
+        [HideInInspector]
+        public int exits = 0b1101;
+    }
+    [System.Serializable]
+    public class L_RU : Room
+    {
+        [HideInInspector]
+        public int exits = 0b1011;
+    }
+    [System.Serializable]
+    public class _DRU : Room
+    {
+        [HideInInspector]
+        public int exits = 0b0111;
+    }
+    [System.Serializable]
+    public class LDRU : Room
+    {
+        [HideInInspector]
+        public int exits = 0b1111;
     }
     //bones that make up the skeleton of the layout
     public class layoutBone
@@ -853,98 +896,96 @@ public class Mighty_MazeGen : ScriptableObject
         public int setRoom()
         {
             uint unlockedBoneExits = boneExits & 0b1111;
-            uint bitCount = (uint)fourBitCounter(unlockedBoneExits);
-            uint roomExits;
-            int perfectRotation = 0;
-            switch (bitCount)
+            if (group.TypeOfGroup == Types.Anchor)
             {
-                default:
-                    roomPrefab = null;
-                    break;
-                case 1:
-                    roomPrefab = group.Rooms.deadEnd.prefab;
-                    roomExits = (uint)group.Rooms.deadEnd.exit1;
-                    if (fourBitCounter(roomExits) != bitCount) { Debug.LogError("Generation Error!!!\n" + group.Name + " has repeating Exits for DeadEnd room"); return 0; }
-                    while (roomExits != unlockedBoneExits)
-                    {
-                        (perfectRotation, roomExits) = rotateRoomClockwise(perfectRotation, roomExits);
-                    }
-                    break;
-                case 2:
-                    if (unlockedBoneExits == 0b0101 || unlockedBoneExits == 0b1010) //straight room
-                    {
-                        roomPrefab = group.Rooms.straight.prefab;
-                        roomExits = (uint)group.Rooms.straight.exit1;
-                        roomExits |= (uint)group.Rooms.straight.exit2;
-                        if (roomExits != 0b0101 && roomExits != 0b1010) { Debug.LogError("Generation Error!!!\n" + group.Name + " has Corner Exits for Straight room"); return 0; }
-                        if (fourBitCounter(roomExits) != bitCount) { Debug.LogError("Generation Error!!!\n" + group.Name + " has Corner Exits for Straight room"); return 0; }
-                        while (roomExits != unlockedBoneExits)
-                        {
-                            (perfectRotation, roomExits) = rotateRoomClockwise(perfectRotation, roomExits);
-                        }
-                    }
-                    else //corner room
-                    {
-                        roomPrefab = group.Rooms.corner.prefab;
-                        roomExits = (uint)group.Rooms.corner.exit1;
-                        roomExits |= (uint)group.Rooms.corner.exit2;
-                        if (roomExits == 0b0101 || roomExits == 0b1010) { Debug.LogError("Generation Error!!!\n" + group.Name + " has Straight Exits for Corner room"); return 0; }
-                        if (fourBitCounter(roomExits) != bitCount) { Debug.LogError("Generation Error!!!\n" + group.Name + " has repeating Exits for Corner room"); return 0; }
-                        while (roomExits != unlockedBoneExits)
-                        {
-                            (perfectRotation, roomExits) = rotateRoomClockwise(perfectRotation, roomExits);
-                        }
-                    }
-                    break;
-                case 3:
-                    roomPrefab = group.Rooms.T.prefab;
-                    roomExits = (uint)group.Rooms.T.exit1;
-                    roomExits |= (uint)group.Rooms.T.exit2;
-                    roomExits |= (uint)group.Rooms.T.exit3;
-                    if (fourBitCounter(roomExits) != bitCount) { Debug.LogError("Generation Error!!!\n" + group.Name + " has repeating Exits for T room"); return 0; }
-                    while (roomExits != unlockedBoneExits)
-                    {
-                        (perfectRotation, roomExits) = rotateRoomClockwise(perfectRotation, roomExits);
-                    }
-                    break;
-                case 4:
-                    roomPrefab = group.Rooms.plus.prefab;
-                    roomExits = (uint)group.Rooms.plus.exit1;
-                    roomExits |= (uint)group.Rooms.plus.exit2;
-                    roomExits |= (uint)group.Rooms.plus.exit3;
-                    roomExits |= (uint)group.Rooms.plus.exit4;
-                    if (fourBitCounter(roomExits) != bitCount) { Debug.LogError("Generation Error!!!\n" + group.Name + " has repeating Exits for Plus room"); return 0; }
-                    while (roomExits != unlockedBoneExits)
-                    {
-                        (perfectRotation, roomExits) = rotateRoomClockwise(perfectRotation, roomExits);
-                    }
-                    break;
-            }
-            return perfectRotation;
-        }
-        //rotates the room clockwise, and clears all bit above the first 4
-        private (int, uint) rotateRoomClockwise(int currentRotation, uint exitNum)
-        {
-            //do this fisrt to clear any bits above first 4,
-            //this is needed when the exit num has 'locked' exits (anchor and complex groups)
-            exitNum &= 0b1111;
-            exitNum <<= 1;
-            if (exitNum >= 0b10000) exitNum++;
-            exitNum &= 0b1111;
-            if (currentRotation == 360) currentRotation = 0;
-            return (currentRotation + 90, exitNum);
-        }
-        //counts the number of on bits in the first four bits of the uint
-        private int fourBitCounter(uint num)
-        {
-            int bitCount = 0;
-            int temp = 1;
-            while (temp <= 8)
+                Anchor groupA = (Anchor)group;
+                roomPrefab = groupA.room;
+            } else if (group.TypeOfGroup == Types.Special)
             {
-                if ((num & temp) > 0) { bitCount++; }
-                temp <<= 1;
+                Special groupS = (Special)group;
+                switch (unlockedBoneExits)
+                {
+                    default:
+                        roomPrefab = null;
+                        break;
+                    case 0b0011:
+                        roomPrefab = groupS.Rooms.__RU[UnityEngine.Random.Range(0, groupS.Rooms.__RU.Count)].prefab;
+                        break;
+                    case 0b0110:
+                        roomPrefab = groupS.Rooms._DR_[UnityEngine.Random.Range(0, groupS.Rooms._DR_.Count)].prefab;
+                        break;
+                    case 0b1100:
+                        roomPrefab = groupS.Rooms.LD__[UnityEngine.Random.Range(0, groupS.Rooms.LD__.Count)].prefab;
+                        break;
+                    case 0b1001:
+                        roomPrefab = groupS.Rooms.L__U[UnityEngine.Random.Range(0, groupS.Rooms.L__U.Count)].prefab;
+                        break;
+                    case 0b1010:
+                        roomPrefab = groupS.Rooms.L_R_[UnityEngine.Random.Range(0, groupS.Rooms.L_R_.Count)].prefab;
+                        break;
+                    case 0b0101:
+                        roomPrefab = groupS.Rooms._D_U[UnityEngine.Random.Range(0, groupS.Rooms._D_U.Count)].prefab;
+                        break;
+                    case 0b1110:
+                        roomPrefab = groupS.Rooms.LDR_[UnityEngine.Random.Range(0, groupS.Rooms.LDR_.Count)].prefab;
+                        break;
+                    case 0b1101:
+                        roomPrefab = groupS.Rooms.LD_U[UnityEngine.Random.Range(0, groupS.Rooms.LD_U.Count)].prefab;
+                        break;
+                    case 0b1011:
+                        roomPrefab = groupS.Rooms.L_RU[UnityEngine.Random.Range(0, groupS.Rooms.L_RU.Count)].prefab;
+                        break;
+                    case 0b0111:
+                        roomPrefab = groupS.Rooms._DRU[UnityEngine.Random.Range(0, groupS.Rooms._DRU.Count)].prefab;
+                        break;
+                    case 0b1111:
+                        roomPrefab = groupS.Rooms.LDRU[UnityEngine.Random.Range(0, groupS.Rooms.LDRU.Count)].prefab;
+                        break;
+                }
+            } else
+            {
+                Generic groupG = (Generic)group;
+                switch (unlockedBoneExits)
+                {
+                    default:
+                        roomPrefab = null;
+                        break;
+                    case 0b0011:
+                        roomPrefab = groupG.Rooms.__RU[UnityEngine.Random.Range(0, groupG.Rooms.__RU.Count)].prefab;
+                        break;
+                    case 0b0110:
+                        roomPrefab = groupG.Rooms._DR_[UnityEngine.Random.Range(0, groupG.Rooms._DR_.Count)].prefab;
+                        break;
+                    case 0b1100:
+                        roomPrefab = groupG.Rooms.LD__[UnityEngine.Random.Range(0, groupG.Rooms.LD__.Count)].prefab;
+                        break;
+                    case 0b1001:
+                        roomPrefab = groupG.Rooms.L__U[UnityEngine.Random.Range(0, groupG.Rooms.L__U.Count)].prefab;
+                        break;
+                    case 0b1010:
+                        roomPrefab = groupG.Rooms.L_R_[UnityEngine.Random.Range(0, groupG.Rooms.L_R_.Count)].prefab;
+                        break;
+                    case 0b0101:
+                        roomPrefab = groupG.Rooms._D_U[UnityEngine.Random.Range(0, groupG.Rooms._D_U.Count)].prefab;
+                        break;
+                    case 0b1110:
+                        roomPrefab = groupG.Rooms.LDR_[UnityEngine.Random.Range(0, groupG.Rooms.LDR_.Count)].prefab;
+                        break;
+                    case 0b1101:
+                        roomPrefab = groupG.Rooms.LD_U[UnityEngine.Random.Range(0, groupG.Rooms.LD_U.Count)].prefab;
+                        break;
+                    case 0b1011:
+                        roomPrefab = groupG.Rooms.L_RU[UnityEngine.Random.Range(0, groupG.Rooms.L_RU.Count)].prefab;
+                        break;
+                    case 0b0111:
+                        roomPrefab = groupG.Rooms._DRU[UnityEngine.Random.Range(0, groupG.Rooms._DRU.Count)].prefab;
+                        break;
+                    case 0b1111:
+                        roomPrefab = groupG.Rooms.LDRU[UnityEngine.Random.Range(0, groupG.Rooms.LDRU.Count)].prefab;
+                        break;
+                }
             }
-            return bitCount;
+            return (int)unlockedBoneExits;
         }
     }
 }

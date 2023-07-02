@@ -18,85 +18,99 @@ MonoBehaviour:
   defaultWorldPosition: {x: 0, y: 0, z: 0}
   GenericRooms:
     Name: Generic
-    Rooms:
-      deadEnd:
-        prefab: {fileID: 8766072518111025443, guid: b126e266a3f6dc04daf0f5a7d7274d2e, type: 3}
-        exit1: 2
-      corner:
-        prefab: {fileID: 8766072518111025443, guid: 347efe59e510bfb43bb61df9898daabd, type: 3}
-        exit1: 1
-        exit2: 2
-      straight:
-        prefab: {fileID: 8766072518111025443, guid: f2560fa335c1fbe43ab645a45b07c304, type: 3}
-        exit1: 8
-        exit2: 2
-      T:
-        prefab: {fileID: 8766072518111025443, guid: 560c6358126c9f649b0d47be55e4ea8d, type: 3}
-        exit1: 1
-        exit2: 2
-        exit3: 8
-      plus:
-        prefab: {fileID: 8766072518111025443, guid: 8ac98b0d9be87d84dbee6943f57c6f92, type: 3}
-        exit1: 1
-        exit2: 4
-        exit3: 2
-        exit4: 8
     TypeOfGroup: 2
+    Rooms:
+      __RU:
+      - prefab: {fileID: 8766072518111025443, guid: 9b6c5236f1d5fe44fa9375e892b37370, type: 3}
+        exits: 0
+      _DR_:
+      - prefab: {fileID: 8766072518111025443, guid: 9bc01b2aee436c64a9fb6606c056a998, type: 3}
+        exits: 0
+      LD__:
+      - prefab: {fileID: 8766072518111025443, guid: 607885aa53b49084f952fd0fc0ee66e4, type: 3}
+        exits: 0
+      L__U:
+      - prefab: {fileID: 8766072518111025443, guid: 8689c165883d0d84a9b5a3578468b366, type: 3}
+        exits: 0
+      L_R_:
+      - prefab: {fileID: 8766072518111025443, guid: 2b7955500258b7846a88ff4514356fd8, type: 3}
+        exits: 0
+      _D_U:
+      - prefab: {fileID: 8766072518111025443, guid: d7a1cccaae49cbc4d94a23d2a3839a65, type: 3}
+        exits: 0
+      LDR_:
+      - prefab: {fileID: 8766072518111025443, guid: 245b23ea7d53fd046b5bb0b81453772e, type: 3}
+        exits: 0
+      LD_U:
+      - prefab: {fileID: 8766072518111025443, guid: 52160b7f38a0f61439adb83a3bae6e18, type: 3}
+        exits: 0
+      L_RU:
+      - prefab: {fileID: 8766072518111025443, guid: 492138bf88021db4c8c231bc5fecd297, type: 3}
+        exits: 0
+      _DRU:
+      - prefab: {fileID: 8766072518111025443, guid: b7255830724b340468aeb680ae6c062a, type: 3}
+        exits: 0
+      LDRU:
+      - prefab: {fileID: 8766072518111025443, guid: d6814b8f3f9b5094e875ee043131ae8b, type: 3}
+        exits: 0
   specialRooms:
-  - Name: Special 1
-    Rooms:
-      deadEnd:
-        prefab: {fileID: 8766072518111025443, guid: f564bec4dbedda942bdaf1ae474657e5, type: 3}
-        exit1: 2
-      corner:
-        prefab: {fileID: 8766072518111025443, guid: 1954ec63a9a5a1b4aa00e15def561ef7, type: 3}
-        exit1: 1
-        exit2: 2
-      straight:
-        prefab: {fileID: 8766072518111025443, guid: 18a4128670a8f834e809636184fb1c34, type: 3}
-        exit1: 8
-        exit2: 2
-      T:
-        prefab: {fileID: 8766072518111025443, guid: 1fa2c5b5c3f9eae42b62b75e80b6c37a, type: 3}
-        exit1: 1
-        exit2: 2
-        exit3: 8
-      plus:
-        prefab: {fileID: 8766072518111025443, guid: c6395e22ca0b5dc49a70f0afa00c55cc, type: 3}
-        exit1: 8
-        exit2: 2
-        exit3: 1
-        exit4: 4
+    Name: Special
     TypeOfGroup: 1
-    Amount: 5
-  anchorRooms:
-  - Name: Anchor 1
+    Amount: 14
     Rooms:
-      deadEnd:
-        prefab: {fileID: 8766072518111025443, guid: c81a58c3d135a5040b72b8271b3e40fa, type: 3}
-        exit1: 2
-      corner:
-        prefab: {fileID: 8766072518111025443, guid: 7837766b4e45410479e8412ed657cf06, type: 3}
-        exit1: 1
-        exit2: 2
-      straight:
-        prefab: {fileID: 8766072518111025443, guid: 3bfae985d251a2d4cbfda454c7e8097b, type: 3}
-        exit1: 8
-        exit2: 2
-      T:
-        prefab: {fileID: 8766072518111025443, guid: 4c9312f68de054b478dbfca938d4cca9, type: 3}
-        exit1: 1
-        exit2: 2
-        exit3: 8
-      plus:
-        prefab: {fileID: 8766072518111025443, guid: 37d0cd66c01ef46419537b163a6fa25d, type: 3}
-        exit1: 2
-        exit2: 8
-        exit3: 1
-        exit4: 4
+      __RU:
+      - prefab: {fileID: 8766072518111025443, guid: c55916490009c45428b9fa3c15971f84, type: 3}
+        exits: 0
+      _DR_:
+      - prefab: {fileID: 8766072518111025443, guid: a6e036ff3c052aa4a9020dc45253aa8b, type: 3}
+        exits: 0
+      LD__:
+      - prefab: {fileID: 8766072518111025443, guid: 6ad01b4e99c2231438af871a70101063, type: 3}
+        exits: 0
+      L__U:
+      - prefab: {fileID: 8766072518111025443, guid: ace4298de169d3043a9bb19caba2fcc8, type: 3}
+        exits: 0
+      L_R_:
+      - prefab: {fileID: 8766072518111025443, guid: 089b5c3907763b0419a104d7e918a064, type: 3}
+        exits: 0
+      _D_U:
+      - prefab: {fileID: 8766072518111025443, guid: 87bb131a159970044bc5931a44b9069a, type: 3}
+        exits: 0
+      LDR_:
+      - prefab: {fileID: 8766072518111025443, guid: ff45bffa1d2d3be47ad68ebcf87fb919, type: 3}
+        exits: 0
+      LD_U:
+      - prefab: {fileID: 8766072518111025443, guid: 98d0df7084f3f9b4dbcf48b8630c39bc, type: 3}
+        exits: 0
+      L_RU:
+      - prefab: {fileID: 8766072518111025443, guid: 5988bfab4ca3894498da5d753c7cf4c4, type: 3}
+        exits: 0
+      _DRU:
+      - prefab: {fileID: 8766072518111025443, guid: 8683bd5bb0ffad94cac5e51a4f0e7db5, type: 3}
+        exits: 0
+      LDRU:
+      - prefab: {fileID: 8766072518111025443, guid: 5c150c6cda861e94088051f57e7f1848, type: 3}
+        exits: 0
+  anchorRooms:
+  - Name: Start
     TypeOfGroup: 0
+    room: {fileID: 8766072518111025443, guid: a61764e68f84f344087fb477887d1d2e, type: 3}
     Amount: 1
-    isFixedExits: 0
+    exits: 0200000001000000
+    possibleLocations:
+    - {x: 0, y: 2}
+  - Name: Exit
+    TypeOfGroup: 0
+    room: {fileID: 8766072518111025443, guid: dc892032a290d2e48b10957e31ded89b, type: 3}
+    Amount: 1
+    exits: 0800000004000000
+    possibleLocations:
+    - {x: 4, y: 4}
+  - Name: Block
+    TypeOfGroup: 0
+    room: {fileID: 8766072518111025443, guid: dc892032a290d2e48b10957e31ded89b, type: 3}
+    Amount: 2
     exits: 
     possibleLocations:
-    - {x: 0, y: 0}
+    - {x: 2, y: 4}
+    - {x: 2, y: 0}
